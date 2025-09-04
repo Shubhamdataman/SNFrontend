@@ -1,13 +1,26 @@
-import { FcGoogle } from "react-icons/fc"
-import { useSelector } from "react-redux"
+import { FcGoogle } from "react-icons/fc";
+import { useDispatch, useSelector } from "react-redux";
 
-import frameImg from "../../../assets/Images/frame.png"
-import LoginForm from "./LoginForm"
-import SignupForm from "./SignupForm"
+import frameImg from "../../../assets/Images/frame.png";
+import LoginForm from "./LoginForm";
+import SignupForm from "./SignupForm";
+import { useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
+import { googleOauth } from "../../../services/operations/authAPI";
 
 function Template({ title, description1, description2, image, formType }) {
-  const { loading } = useSelector((state) => state.auth)
-
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
+  const handleGoogleSignIn = useGoogleLogin({
+    onSuccess: (response) => {
+      console.log("Google login successful, token: ", response);
+      dispatch(googleOauth(response, navigate));
+    },
+    onError: () => {
+      console.error("Google login failed");
+    },
+  });
   return (
     <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
       {loading ? (
@@ -24,6 +37,14 @@ function Template({ title, description1, description2, image, formType }) {
                 {description2}
               </span>
             </p>
+            {/* Continue with Google Button */}
+            <button
+              onClick={() => handleGoogleSignIn()}
+              className="flex items-center justify-center w-full mt-4 mb-4 py-2 bg-white border border-gray-300 rounded-lg text-black shadow-md hover:bg-gray-100"
+            >
+              <FcGoogle className="mr-2" /> Continue with Google
+            </button>
+
             {formType === "signup" ? <SignupForm /> : <LoginForm />}
           </div>
           <div className="relative mx-auto w-11/12 max-w-[450px] md:mx-0">
@@ -46,7 +67,7 @@ function Template({ title, description1, description2, image, formType }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default Template
+export default Template;
